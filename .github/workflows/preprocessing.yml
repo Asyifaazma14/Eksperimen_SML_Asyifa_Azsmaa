@@ -1,0 +1,53 @@
+name: Automasi Preprocessing Data
+
+# Trigger: Workflow ini akan jalan otomatis saat ada push ke branch 'main'
+# TAPI hanya jika ada perubahan di folder data mentah atau script python
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'data/raw/**'       # Jalan jika ada file baru di folder data raw
+      - 'src/preprocess.py' # Jalan jika kamu update kodingan scriptnya
+
+jobs:
+  run-preprocessing:
+    runs-on: ubuntu-latest
+    
+    # IZIN PENTING: Memberi hak akses ke bot untuk upload file balik ke repo
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Ambil (Checkout) kode dari repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Siapkan Python versi 3.9
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. Install library yang dibutuhkan (pandas, dll)
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # 4. Jalankan script python kamu
+      # Pastikan scriptmu membaca dari data/raw dan menyimpan ke data/processed
+      - name: Run preprocessing script
+        run: python src/preprocess.py
+
+      # 5. Cek apakah ada file baru, lalu Commit dan Push balik ke repo
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
+          # Tambahkan semua file hasil (csv/pkl) di folder processed
+          git add data/processed/
+          
+          # Commit dan Push (hanya jika ada perubahan)
+          git commit -m "Auto-generated: Update processed data" || echo "No changes to commit"
+          git push
