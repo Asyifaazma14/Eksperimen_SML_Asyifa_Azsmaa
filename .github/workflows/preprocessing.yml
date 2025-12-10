@@ -51,3 +51,4 @@ jobs:
           # Commit dan Push (hanya jika ada perubahan)
           git commit -m "Auto-generated: Update processed data" || echo "No changes to commit"
           git push
+          # Percobaan trigger GitHub Actions pertama
